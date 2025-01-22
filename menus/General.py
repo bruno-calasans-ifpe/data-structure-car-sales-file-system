@@ -9,7 +9,7 @@ def check_valid_option(option, options: list[str]):
 
 
 def show_main_menu():
-    options = ["Cliente", "Carros", "Sair"]
+    options = ["Cliente", "Carros", "Vendedores", "Venda", "Sair"]
     while True:
         try:
             create_line("-", 40)

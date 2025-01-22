@@ -1,53 +1,29 @@
-from typing import NotRequired, TypedDict, Required
-from controllers.FileDatabase import FileDatabase
-
-
-class Car(TypedDict):
-    id: Required[str]
-    brand: Required[str]
-    model: Required[str]
-    year: Required[int]
-    price: Required[int]
-
-
-class PartialCarInput(TypedDict):
-    brand: NotRequired[str]
-    model: NotRequired[str]
-    year: NotRequired[int]
-    price: NotRequired[int]
-
-
-class RequiredCarInput(TypedDict):
-    brand: Required[str]
-    model: Required[str]
-    year: Required[int]
-    price: Required[int]
-
-
-CAR_PATH = "./data/cars.json"
-car_db = FileDatabase(CAR_PATH)
+from models.Car import Car, RequiredCarInput, PartialCarInput, car
+from schema import SchemaError
 
 
 class CarController:
 
-    def generate_index(self):
-        next_index = len(car_db.getAll()) + 1
-        return next_index
-
     # cria um novo carro
-    def create(self, car_input: RequiredCarInput):
+    def create(self, car_input: RequiredCarInput) -> Car | None:
         try:
-            # generate id
-            car_input.update({"id": self.generate_index()})
-            car_db.create(car_input)
-            print("Carro salvo com sucesso")
-        except Exception:
-            print("Erro ao salvar carro")
+            created_car = car.create(car_input)
+            print("Carro criado com sucesso")
+            return created_car
+
+        except SchemaError as e:
+            print("Dados inválidos")
+            for error in e.errors:
+                if error != None:
+                    print(error)
+            return None
+        except:
+            print("Erro ao criado carro")
 
     # pega um carro pelo id
-    def get(self, car_id: int) -> Car:
+    def get(self, car_id: int) -> Car | None:
         try:
-            found_car = car_db.get("id", car_id)
+            found_car = car.get("id", car_id)
             if found_car == None:
                 print("Carro não encontrado")
             else:
@@ -55,24 +31,44 @@ class CarController:
             return found_car
         except:
             print("Error ao encontrar carro")
+            return None
 
     # pega todos os carros cadastrados
-    def getAll(self) -> list[Car]:
-        cars = car_db.getAll()
-        return cars
+    def getAll(self) -> list[Car] | None:
+        try:
+            cars = car.getAll()
+            return cars
+        except:
+            print("Erro ao pegar todos os carros")
+            return None
 
     # atualiza um carro pelo id
-    def update(self, car_id: str, car_input: PartialCarInput):
+    def update(self, car_id: str, car_input: PartialCarInput) -> Car | None:
         try:
-            car_db.update("id", car_id, car_input)
+            # tenta encontrar carro
+            found_sale = self.get(car_id)
+            if found_sale == None:
+                return None
+
+            updated_car = car.update("id", car_id, car_input)
             print("Carro atualizado com sucesso")
+            return updated_car
+
+        except SchemaError as e:
+            print("Dados inválidos")
+            for error in e.errors:
+                if error != None:
+                    print(error)
+            return None
+
         except:
             print("Erro ao atualizar carro")
+            return None
 
     # deleta um carro pelo id
-    def delete(self, car_id: int):
+    def delete(self, car_id: int) -> Car | None:
         try:
-            deleted_car = car_db.delete("id", car_id)
+            deleted_car = car.delete("id", car_id)
             if deleted_car == None:
                 print("Carro não encontrado")
             else:
@@ -81,3 +77,4 @@ class CarController:
             return deleted_car
         except:
             print("Erro ao remover carro")
+            return None

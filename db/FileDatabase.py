@@ -1,10 +1,13 @@
 import json
+from schema import Schema, And, Use, Optional, SchemaError
 
 
 class FileDatabase:
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, create_schema: Schema, update_schema: Schema) -> None:
         self.path = path
+        self.create_schema = create_schema
+        self.update_schema = update_schema
         try:
             # Tenta carregar o arquivo
             with open(self.path, "r") as file:
@@ -32,18 +35,23 @@ class FileDatabase:
         return self.read()
 
     def create(self, data: dict):
+        self.valid_create_input(data)
+        id = self.generate_id()
+        data.update({"id": id})
         db = self.read()
         db.append(data)
         self.write(db)
+        return data
 
     def update(self, key: str, value: any, data: any):
+        self.valid_update_input(data)
         db = self.read()
         for register in db:
             if register[key] == value:
                 register.update(data)
                 self.write(db)
-                return True
-        return False
+                return register
+        return None
 
     def delete(self, key: str, value: any):
         db = self.read()
@@ -61,3 +69,13 @@ class FileDatabase:
                 json.dump([], file)
         except:
             print("Erro ao limpar database")
+
+    def generate_id(self):
+        next_index = len(self.getAll()) + 1
+        return next_index
+
+    def valid_create_input(self, input: dict):
+        return self.create_schema.validate(input)
+
+    def valid_update_input(self, input: dict):
+        return self.update_schema.validate(input)

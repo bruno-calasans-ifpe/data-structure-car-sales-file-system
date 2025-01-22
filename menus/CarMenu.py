@@ -1,7 +1,6 @@
-from controllers.CarController import CarController, Car
+from controllers.Controllers import car_controller
+from models.Car import Car
 from menus.General import break_line, create_line, show_option_menu
-
-carcontroller = CarController()
 
 
 def show_car(car: Car):
@@ -23,7 +22,7 @@ def create_car_menu():
     year = int(input("Ano: ").strip())
     price = int(input("Preço: ").strip())
 
-    carcontroller.create(
+    car_controller.create(
         {
             "brand": brand,
             "model": model,
@@ -38,7 +37,7 @@ def show_all_cars_menu():
     print("Você quer ver os carros cadastrados")
     print("Listando todos os carros: ")
 
-    cars = carcontroller.getAll()
+    cars = car_controller.getAll()
     if len(cars) == 0:
         return print("Nenhum carro cadastrado ainda")
 
@@ -51,7 +50,7 @@ def search_carmenu():
     print("Você quuer procurar por um carro")
     print("Insira o id do carro.")
     id = int(input("ID: ").strip())
-    found_car = carcontroller.get(id)
+    found_car = car_controller.get(id)
     if found_car != None:
         show_car(found_car)
 
@@ -62,25 +61,29 @@ def delete_carmenu():
     print("Insira o id do carro.")
     id = int(input("ID: ").strip())
 
-    deleted_car = carcontroller.delete(id)
+    deleted_car = car_controller.delete(id)
     if deleted_car != None:
-        create_line("-", 40)
         show_car(deleted_car)
 
 
 # para atualizar um carro
 def update_carmenu():
     print("Você quer atualizar um carro")
-    print("Insira o id do carro que você quer encontrar")
-    id = int(input("ID: ").strip())
-    found_car = carcontroller.get(id)
+
+    print("Insira o id do carro que você quer atualizar")
+    car_id = int(input("ID: ").strip())
+    found_car = car_controller.get(car_id)
+
     if found_car == None:
         return
+    create_line("-", 40)
     show_car(found_car)
+    create_line("-", 40)
 
     print(
         "Insira os dados que você gostaria de atualizar. Deixe em branco caso não queira atualizar"
     )
+
     data_to_update: dict = {}
     brand = str(input("Marca: ").strip())
     model = str(input("Modelo: ").strip())
@@ -99,7 +102,7 @@ def update_carmenu():
     if price < 0:
         data_to_update.update({"price": price})
 
-    carcontroller.update(found_car["id"], data_to_update)
+    car_controller.update(car_id, data_to_update)
 
 
 # menu de carro principal
